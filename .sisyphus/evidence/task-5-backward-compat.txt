@@ -1,3 +1,0 @@
-311:  const { AIProviderFactory } = await import("./ai/ai-provider-factory.js");
-317:  const provider = AIProviderFactory.createProvider(CONFIG.memoryProvider, providerConfig);
-378:  const result = await provider.executeToolCall(systemPrompt, aiPrompt, toolSchema, sessionID);

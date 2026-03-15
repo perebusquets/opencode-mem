@@ -37,19 +37,22 @@ export const OpenCodeMemPlugin: Plugin = async (ctx: PluginInput) => {
     }
   }
 
-  // Wire opencode state path and provider list for the opencode provider integration
-  try {
-    const pathResult = await ctx.client.path.get();
-    if (pathResult.data?.state) {
-      setStatePath(pathResult.data.state);
+  // Wire opencode state path and provider list — fire-and-forget to avoid blocking init
+  // These calls can hang if opencode isn't fully bootstrapped yet
+  (async () => {
+    try {
+      const pathResult = await ctx.client.path.get();
+      if (pathResult.data?.state) {
+        setStatePath(pathResult.data.state);
+      }
+      const providerResult = await ctx.client.provider.list();
+      if (providerResult.data?.connected) {
+        setConnectedProviders(providerResult.data.connected);
+      }
+    } catch (error) {
+      log("Failed to initialize opencode provider state", { error: String(error) });
     }
-    const providerResult = await ctx.client.provider.list();
-    if (providerResult.data?.connected) {
-      setConnectedProviders(providerResult.data.connected);
-    }
-  } catch (error) {
-    log("Failed to initialize opencode provider state", { error: String(error) });
-  }
+  })();
 
   if (CONFIG.webServerEnabled) {
     startWebServer({
